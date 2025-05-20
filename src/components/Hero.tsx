@@ -43,7 +43,7 @@ const Hero: React.FC = () => {
         >
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg">
             <img
-              src="https://images.pexels.com/photos/6341564/pexels-photo-6341564.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+              src="/src/assets/img/pudim_hero.jpg"
               alt="Pudim Tradicional Dudu's Sweet Dessert"
               className="w-full h-full object-cover"
             />
@@ -52,7 +52,7 @@ const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="absolute -bottom-6 -right-6 bg-white p-4 rounded-lg shadow-md max-w-xs hidden md:block"
+            className="absolute -bottom-20 -right-6 bg-white p-4 rounded-lg shadow-md max-w-xs hidden md:block"
           >
             <div className="flex items-center mb-2">
               <div className="bg-primary/20 p-2 rounded-full mr-3">
