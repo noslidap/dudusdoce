@@ -5,7 +5,7 @@ export const products: Product[] = [
     id: 'traditional',
     name: 'Pudim Tradicional',
     description: 'Nosso clássico pudim de leite condensado, suave e com calda caramelizada perfeita.',
-    image: 'assets/pudim_tradicional.png',
+    image: '/src/assets/pudim_tradicional.png',
     prices: {
       '80ml': 8.00,
       '120ml': 10.00,
@@ -19,7 +19,7 @@ export const products: Product[] = [
     id: 'chocolate',
     name: 'Pudim de Chocolate',
     description: 'Irresistível pudim de chocolate cremoso, coberto com calda de chocolate.',
-    image: 'assets/pudim_chocolate.png',
+    image: '/src/assets/pudim_chocolate.png',
     prices: {
       '80ml': 9.00,
       '120ml': 12.50,
@@ -32,7 +32,7 @@ export const products: Product[] = [
     id: 'brigadeiro',
     name: 'Pudim de Brigadeiro',
     description: 'A combinação perfeita do nosso pudim com o sabor do tradicional brigadeiro brasileiro.',
-    image: 'assets/pudim_brigadeiro.png',
+    image: '/src/assets/pudim_brigadeiro.png',
     prices: {
       '80ml': 9.50,
       '120ml': 13.00,
@@ -45,7 +45,7 @@ export const products: Product[] = [
     id: 'doce-de-leite',
     name: 'Pudim de Doce de Leite',
     description: 'Pudim com o sabor intenso e caramelizado do autêntico doce de leite.',
-    image: 'assets/pudim_doce_de_leite.png',
+    image: '/src/assets/pudim_doce_de_leite.png',
     prices: {
       '80ml': 9.50,
       '120ml': 13.00,
@@ -58,7 +58,7 @@ export const products: Product[] = [
     id: 'pacoca',
     name: 'Pudim de Paçoca',
     description: 'Delicioso pudim com o sabor inconfundível da paçoca brasileira.',
-    image: 'assets/pudim_pacoca.png',
+    image: '/src/assets/pudim_pacoca.png',
     prices: {
       '80ml': 9.50,
       '120ml': 13.00,
@@ -71,7 +71,7 @@ export const products: Product[] = [
     id: 'chocolate-branco',
     name: 'Pudim de Chocolate Branco',
     description: 'Pudim de chocolate branco, suave e sofisticado.',
-    image: 'assets/pudim_chocolate_branco.png',
+    image: '/src/assets/pudim_chocolate_branco.png',
     prices: {
       '80ml': 9.50,
       '120ml': 13.00,
@@ -84,7 +84,7 @@ export const products: Product[] = [
     id: 'chocolate-suico',
     name: 'Pudim de Chocolate Suíço',
     description: 'Pudim especial inspirado no chocolate suíço, com textura extra cremosa.',
-    image: 'assets/pudim_chocolate_suico.png',
+    image: '/src/assets/pudim_chocolate_suico.png',
     prices: {
       '80ml': 11.50,
       '120ml': 14.90,
@@ -98,7 +98,7 @@ export const products: Product[] = [
     id: 'ninho-nutella',
     name: 'Pudim Ninho com Nutella',
     description: 'A combinação irresistível do leite Ninho com Nutella em um pudim cremoso.',
-    image: 'assets/pudim_ninho_nutella.png',
+    image: '/src/assets/pudim_ninho_nutella.png',
     prices: {
       '80ml': 12.90,
       '120ml': 14.90,
@@ -112,7 +112,7 @@ export const products: Product[] = [
     id: 'pistache',
     name: 'Pudim de Pistache',
     description: 'Pudim sofisticado com o sabor único do pistache, finalizado com pistaches picados.',
-    image: 'assets/pudim_pistache.png',
+    image: '/src/assets/pudim_pistache.png',
     prices: {
       '80ml': 12.90,
       '120ml': 14.90,
