@@ -43,7 +43,7 @@ const Hero: React.FC = () => {
         >
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg">
             <img
-              src="/src/assets/pudim_hero.jpg"
+              src="/assets/pudim_hero.jpg"
               alt="Pudim Tradicional Dudu's Sweet Dessert"
               className="w-full h-full object-cover"
             />

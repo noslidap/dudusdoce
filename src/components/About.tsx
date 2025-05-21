@@ -46,7 +46,7 @@ const About: React.FC = () => {
             className="rounded-lg overflow-hidden shadow-lg"
           >
             <img
-              src="/src/assets/sobre.png"
+              src="/assets/sobre.png"
               alt="Produção artesanal de pudins"
               className="w-full h-auto"
             />
