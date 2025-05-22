@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, BookIcon as TiktokIcon, Facebook, MapPin, Phone, Mail } from 'lucide-react';
+import { Instagram, BookIcon as TiktokIcon, MapPin, Phone, Mail } from 'lucide-react';
 import Logo from './Logo';
 
 const Footer: React.FC = () => {
@@ -31,15 +31,6 @@ const Footer: React.FC = () => {
                 aria-label="TikTok"
               >
                 <TiktokIcon size={20} />
-              </a>
-              <a 
-                href="#" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-warm-gray-700 hover:text-primary transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook size={20} />
               </a>
             </div>
           </div>
