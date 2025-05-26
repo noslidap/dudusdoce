@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Package, DollarSign, ShoppingBag, TrendingUp, AlertCircle, LogOut, Home } from 'lucide-react';
+import { Package, DollarSign, ShoppingBag, TrendingUp, AlertCircle, LogOut, Home, Save } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { Product, Size } from '../types';
-import debounce from 'lodash/debounce';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [inventory, setInventory] = useState<any[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [localInventory, setLocalInventory] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalRevenue: 0,
@@ -56,6 +59,7 @@ const AdminPage: React.FC = () => {
 
       if (inventoryError) throw inventoryError;
       setInventory(inventoryData || []);
+      setLocalInventory(inventoryData || []);
 
       // Fetch stats
       const { data: ordersData } = await supabase
@@ -77,6 +81,7 @@ const AdminPage: React.FC = () => {
 
     } catch (err: any) {
       setError(err.message);
+      toast.error('Erro ao carregar dados');
     } finally {
       setIsLoading(false);
     }
@@ -87,41 +92,58 @@ const AdminPage: React.FC = () => {
     navigate('/login');
   };
 
-  const updateInventory = async (productId: string, size: Size, quantity: number | string, price: number | string) => {
-    try {
-      // Validate product exists in Supabase
-      const productExists = products.some(p => p.id === productId);
-      if (!productExists) {
-        throw new Error('Produto inválido selecionado');
-      }
-
-      // Ensure quantity is a valid number and not null
-      const validQuantity = Math.max(0, parseInt(quantity.toString()) || 0);
+  const handleInventoryChange = (productId: string, size: Size, field: 'quantity' | 'price', value: string) => {
+    setLocalInventory(prev => {
+      const newInventory = [...prev];
+      const index = newInventory.findIndex(item => item.product_id === productId && item.size === size);
       
-      // Ensure price is a valid number
-      const validPrice = parseFloat(price.toString()) || 0;
-
-      const { error } = await supabase
-        .from('inventory')
-        .upsert({
+      if (index === -1) {
+        newInventory.push({
           product_id: productId,
           size,
-          available_quantity: validQuantity,
-          price: validPrice
-        }, {
-          onConflict: 'product_id,size'
+          available_quantity: field === 'quantity' ? parseInt(value) || 0 : 0,
+          price: field === 'price' ? parseFloat(value) || 0 : 0
         });
-
-      if (error) throw error;
+      } else {
+        newInventory[index] = {
+          ...newInventory[index],
+          [field === 'quantity' ? 'available_quantity' : 'price']: field === 'quantity' ? parseInt(value) || 0 : parseFloat(value) || 0
+        };
+      }
       
-      await fetchData();
-    } catch (err: any) {
-      setError(err.message);
-    }
+      return newInventory;
+    });
   };
 
-  // Debounced version of updateInventory
-  const debouncedUpdateInventory = debounce(updateInventory, 1000);
+  const saveInventory = async () => {
+    try {
+      setIsSaving(true);
+      setError(null);
+
+      for (const item of localInventory) {
+        const { error } = await supabase
+          .from('inventory')
+          .upsert({
+            product_id: item.product_id,
+            size: item.size,
+            available_quantity: item.available_quantity,
+            price: item.price
+          }, {
+            onConflict: 'product_id,size'
+          });
+
+        if (error) throw error;
+      }
+
+      await fetchData();
+      toast.success('Estoque atualizado com sucesso!');
+    } catch (err: any) {
+      setError(err.message);
+      toast.error('Erro ao salvar alterações');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -136,6 +158,7 @@ const AdminPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background pt-24 pb-16">
       <div className="container mx-auto px-4">
+        <ToastContainer position="top-right" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -222,7 +245,17 @@ const AdminPage: React.FC = () => {
 
           {/* Inventory Management */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-6">Gerenciar Estoque</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">Gerenciar Estoque</h2>
+              <button
+                onClick={saveInventory}
+                disabled={isSaving}
+                className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save size={20} className="mr-2" />
+                {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+              </button>
+            </div>
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-warm-gray-700 mb-2">
@@ -245,7 +278,7 @@ const AdminPage: React.FC = () => {
             {selectedProduct && (
               <div className="space-y-6">
                 {['80ml', '120ml', '250ml', '500ml', '1000ml'].map((size) => {
-                  const inventoryItem = inventory.find(
+                  const inventoryItem = localInventory.find(
                     item => item.product_id === selectedProduct && item.size === size
                   );
                   const product = products.find(p => p.id === selectedProduct);
@@ -265,11 +298,11 @@ const AdminPage: React.FC = () => {
                             type="number"
                             min="0"
                             value={inventoryItem?.available_quantity || 0}
-                            onChange={(e) => debouncedUpdateInventory(
+                            onChange={(e) => handleInventoryChange(
                               selectedProduct,
                               size as Size,
-                              e.target.value,
-                              inventoryItem?.price || defaultPrice
+                              'quantity',
+                              e.target.value
                             )}
                             className="w-full p-2 border border-warm-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                           />
@@ -283,10 +316,10 @@ const AdminPage: React.FC = () => {
                             min="0"
                             step="0.01"
                             value={inventoryItem?.price || defaultPrice}
-                            onChange={(e) => debouncedUpdateInventory(
+                            onChange={(e) => handleInventoryChange(
                               selectedProduct,
                               size as Size,
-                              inventoryItem?.available_quantity || 0,
+                              'price',
                               e.target.value
                             )}
                             className="w-full p-2 border border-warm-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
