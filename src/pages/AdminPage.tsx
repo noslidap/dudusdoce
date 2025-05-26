@@ -78,15 +78,27 @@ const AdminPage: React.FC = () => {
     navigate('/login');
   };
 
-  const updateInventory = async (productId: string, size: Size, quantity: number, price: number) => {
+  const updateInventory = async (productId: string, size: Size, quantity: number | string, price: number | string) => {
     try {
+      // Validate product exists
+      const productExists = frontendProducts.some(p => p.id === productId);
+      if (!productExists) {
+        throw new Error('Produto inválido selecionado');
+      }
+
+      // Ensure quantity is a valid number and not null
+      const validQuantity = Math.max(0, parseInt(quantity.toString()) || 0);
+      
+      // Ensure price is a valid number
+      const validPrice = parseFloat(price.toString()) || 0;
+
       const { error } = await supabase
         .from('inventory')
         .upsert({
           product_id: productId,
           size,
-          available_quantity: quantity,
-          price
+          available_quantity: validQuantity,
+          price: validPrice
         }, {
           onConflict: 'product_id,size'
         });
@@ -235,7 +247,7 @@ const AdminPage: React.FC = () => {
                             onChange={(e) => updateInventory(
                               selectedProduct,
                               size as Size,
-                              parseInt(e.target.value),
+                              e.target.value,
                               inventoryItem?.price || defaultPrice
                             )}
                             className="w-full p-2 border border-warm-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
@@ -254,7 +266,7 @@ const AdminPage: React.FC = () => {
                               selectedProduct,
                               size as Size,
                               inventoryItem?.available_quantity || 0,
-                              parseFloat(e.target.value)
+                              e.target.value
                             )}
                             className="w-full p-2 border border-warm-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                           />
