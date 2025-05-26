@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Package, DollarSign, ShoppingBag, TrendingUp, AlertCircle } from 'lucide-react';
+import { Package, DollarSign, ShoppingBag, TrendingUp, AlertCircle, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { Product, Size } from '../types';
+import { products as frontendProducts } from '../data/products';
 
 const AdminPage: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [inventory, setInventory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [inventory, setInventory] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalRevenue: 0,
@@ -18,21 +20,25 @@ const AdminPage: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchData();
-    fetchStats();
+    checkAuth();
+    if (frontendProducts.length > 0 && !selectedProduct) {
+      setSelectedProduct(frontendProducts[0].id);
+    }
   }, []);
+
+  const checkAuth = async () => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session) {
+      navigate('/login');
+      return;
+    }
+    fetchData();
+  };
 
   const fetchData = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       
-      // Fetch products
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select('*');
-
-      if (productsError) throw productsError;
-
       // Fetch inventory
       const { data: inventoryData, error: inventoryError } = await supabase
         .from('inventory')
@@ -40,18 +46,9 @@ const AdminPage: React.FC = () => {
 
       if (inventoryError) throw inventoryError;
 
-      setProducts(productsData);
-      setInventory(inventoryData);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+      setInventory(inventoryData || []);
 
-  const fetchStats = async () => {
-    try {
-      // Fetch total orders and revenue
+      // Fetch stats
       const { data: ordersData } = await supabase
         .from('orders')
         .select('total_amount');
@@ -59,26 +56,26 @@ const AdminPage: React.FC = () => {
       const totalOrders = ordersData?.length || 0;
       const totalRevenue = ordersData?.reduce((sum, order) => sum + order.total_amount, 0) || 0;
 
-      // Fetch low stock items
-      const { data: lowStockData } = await supabase
-        .from('inventory')
-        .select('*')
-        .lt('available_quantity', 5);
-
-      const { data: outOfStockData } = await supabase
-        .from('inventory')
-        .select('*')
-        .eq('available_quantity', 0);
+      const lowStockItems = inventoryData?.filter(item => item.available_quantity < 5).length || 0;
+      const outOfStockItems = inventoryData?.filter(item => item.available_quantity === 0).length || 0;
 
       setStats({
         totalOrders,
         totalRevenue,
-        lowStock: lowStockData?.length || 0,
-        outOfStock: outOfStockData?.length || 0
+        lowStock: lowStockItems,
+        outOfStock: outOfStockItems
       });
+
     } catch (err: any) {
-      console.error('Error fetching stats:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
   };
 
   const updateInventory = async (productId: string, size: Size, quantity: number, price: number) => {
@@ -102,21 +99,11 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background pt-24 pb-16">
         <div className="container mx-auto px-4">
-          <div className="text-center">Loading...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background pt-24 pb-16">
-        <div className="container mx-auto px-4">
-          <div className="text-red-500">Error: {error}</div>
+          <div className="text-center">Carregando...</div>
         </div>
       </div>
     );
@@ -130,7 +117,22 @@ const AdminPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="font-heading text-3xl font-bold mb-8">Painel Administrativo</h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="font-heading text-3xl font-bold">Painel Administrativo</h1>
+            <button
+              onClick={handleLogout}
+              className="flex items-center px-4 py-2 bg-warm-gray-100 hover:bg-warm-gray-200 rounded-lg transition-colors"
+            >
+              <LogOut size={20} className="mr-2" />
+              Sair
+            </button>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-8">
+              {error}
+            </div>
+          )}
 
           {/* Dashboard Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -199,7 +201,7 @@ const AdminPage: React.FC = () => {
                 className="w-full p-2 border border-warm-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               >
                 <option value="">Selecione um produto...</option>
-                {products.map((product) => (
+                {frontendProducts.map((product) => (
                   <option key={product.id} value={product.id}>
                     {product.name}
                   </option>
@@ -213,6 +215,8 @@ const AdminPage: React.FC = () => {
                   const inventoryItem = inventory.find(
                     item => item.product_id === selectedProduct && item.size === size
                   );
+                  const product = frontendProducts.find(p => p.id === selectedProduct);
+                  const defaultPrice = product ? product.prices[size as Size] : 0;
 
                   return (
                     <div key={size} className="flex items-center gap-4 p-4 bg-warm-gray-50 rounded-lg">
@@ -232,7 +236,7 @@ const AdminPage: React.FC = () => {
                               selectedProduct,
                               size as Size,
                               parseInt(e.target.value),
-                              inventoryItem?.price || 0
+                              inventoryItem?.price || defaultPrice
                             )}
                             className="w-full p-2 border border-warm-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                           />
@@ -245,7 +249,7 @@ const AdminPage: React.FC = () => {
                             type="number"
                             min="0"
                             step="0.01"
-                            value={inventoryItem?.price || 0}
+                            value={inventoryItem?.price || defaultPrice}
                             onChange={(e) => updateInventory(
                               selectedProduct,
                               size as Size,
