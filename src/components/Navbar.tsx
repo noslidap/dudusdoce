@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Menu as MenuIcon, X, ShoppingBag } from 'lucide-react';
+import { Menu as MenuIcon, X, ShoppingBag, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import { useCart } from '../context/CartContext';
 
@@ -56,6 +57,13 @@ const Navbar: React.FC = () => {
               {link.name}
             </a>
           ))}
+          <Link
+            to="/admin"
+            className="text-warm-gray-900 hover:text-primary font-medium transition-colors flex items-center"
+          >
+            <Settings size={20} className="mr-2" />
+            Admin
+          </Link>
           <button
             onClick={toggleCart}
             className="relative p-2 hover:bg-warm-gray-100 rounded-full transition-colors"
@@ -72,6 +80,12 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Menu Button */}
         <div className="flex items-center space-x-4 md:hidden">
+          <Link
+            to="/admin"
+            className="p-2 hover:bg-warm-gray-100 rounded-full transition-colors"
+          >
+            <Settings size={20} />
+          </Link>
           <button
             onClick={toggleCart}
             className="relative p-2 hover:bg-warm-gray-100 rounded-full transition-colors"
@@ -114,5 +128,3 @@ const Navbar: React.FC = () => {
     </nav>
   );
 };
-
-export default Navbar;
