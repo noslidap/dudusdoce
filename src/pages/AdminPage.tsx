@@ -12,6 +12,7 @@ const AdminPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [inventory, setInventory] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalRevenue: 0,
@@ -21,9 +22,6 @@ const AdminPage: React.FC = () => {
 
   useEffect(() => {
     checkAuth();
-    if (frontendProducts.length > 0 && !selectedProduct) {
-      setSelectedProduct(frontendProducts[0].id);
-    }
   }, []);
 
   const checkAuth = async () => {
@@ -39,13 +37,24 @@ const AdminPage: React.FC = () => {
     try {
       setIsLoading(true);
       
+      // Fetch products from Supabase
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('*');
+
+      if (productsError) throw productsError;
+      setProducts(productsData || []);
+
+      if (productsData && productsData.length > 0 && !selectedProduct) {
+        setSelectedProduct(productsData[0].id);
+      }
+
       // Fetch inventory
       const { data: inventoryData, error: inventoryError } = await supabase
         .from('inventory')
         .select('*');
 
       if (inventoryError) throw inventoryError;
-
       setInventory(inventoryData || []);
 
       // Fetch stats
@@ -80,8 +89,8 @@ const AdminPage: React.FC = () => {
 
   const updateInventory = async (productId: string, size: Size, quantity: number | string, price: number | string) => {
     try {
-      // Validate product exists
-      const productExists = frontendProducts.some(p => p.id === productId);
+      // Validate product exists in Supabase
+      const productExists = products.some(p => p.id === productId);
       if (!productExists) {
         throw new Error('Produto inválido selecionado');
       }
@@ -213,7 +222,7 @@ const AdminPage: React.FC = () => {
                 className="w-full p-2 border border-warm-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               >
                 <option value="">Selecione um produto...</option>
-                {frontendProducts.map((product) => (
+                {products.map((product) => (
                   <option key={product.id} value={product.id}>
                     {product.name}
                   </option>
