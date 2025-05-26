@@ -40,7 +40,6 @@ const AdminPage: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Fetch products from Supabase
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*');
@@ -52,7 +51,6 @@ const AdminPage: React.FC = () => {
         setSelectedProduct(productsData[0].id);
       }
 
-      // Fetch inventory
       const { data: inventoryData, error: inventoryError } = await supabase
         .from('inventory')
         .select('*');
@@ -61,7 +59,6 @@ const AdminPage: React.FC = () => {
       setInventory(inventoryData || []);
       setLocalInventory(inventoryData || []);
 
-      // Fetch stats
       const { data: ordersData } = await supabase
         .from('orders')
         .select('total_amount');
@@ -92,22 +89,45 @@ const AdminPage: React.FC = () => {
     navigate('/login');
   };
 
+  const formatCurrency = (value: string) => {
+    // Remove any non-digit characters
+    const numbers = value.replace(/\D/g, '');
+    
+    // Convert to cents, then to reais
+    const amount = parseFloat(numbers) / 100;
+    
+    // Format as currency
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'decimal',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   const handleInventoryChange = (productId: string, size: Size, field: 'quantity' | 'price', value: string) => {
     setLocalInventory(prev => {
       const newInventory = [...prev];
       const index = newInventory.findIndex(item => item.product_id === productId && item.size === size);
+      
+      let processedValue = value;
+      if (field === 'price') {
+        processedValue = formatCurrency(value);
+      }
       
       if (index === -1) {
         newInventory.push({
           product_id: productId,
           size,
           available_quantity: field === 'quantity' ? parseInt(value) || 0 : 0,
-          price: field === 'price' ? parseFloat(value) || 0 : 0
+          price: field === 'price' ? parseFloat(processedValue.replace(/\./g, '').replace(',', '.')) || 0 : 0
         });
       } else {
         newInventory[index] = {
           ...newInventory[index],
-          [field === 'quantity' ? 'available_quantity' : 'price']: field === 'quantity' ? parseInt(value) || 0 : parseFloat(value) || 0
+          [field === 'quantity' ? 'available_quantity' : 'price']: 
+            field === 'quantity' 
+              ? parseInt(value) || 0 
+              : parseFloat(processedValue.replace(/\./g, '').replace(',', '.')) || 0
         };
       }
       
@@ -145,6 +165,13 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  const getInventoryItem = (productId: string, size: Size) => {
+    return localInventory.find(item => item.product_id === productId && item.size === size) || {
+      available_quantity: 0,
+      price: 0
+    };
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background pt-24 pb-16">
@@ -166,13 +193,13 @@ const AdminPage: React.FC = () => {
         >
           <div className="flex justify-between items-center mb-8">
             <div className="flex items-center gap-4">
-              <a 
-                href="/"
+              <Link 
+                to="/"
                 className="flex items-center gap-2 text-warm-gray-600 hover:text-primary transition-colors"
               >
                 <Home size={20} />
                 <span>Voltar ao site</span>
-              </a>
+              </Link>
               <h1 className="font-heading text-3xl font-bold">Painel Administrativo</h1>
             </div>
             <button
@@ -190,7 +217,6 @@ const AdminPage: React.FC = () => {
             </div>
           )}
 
-          {/* Dashboard Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between">
@@ -243,7 +269,6 @@ const AdminPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Inventory Management */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Gerenciar Estoque</h2>
@@ -278,11 +303,7 @@ const AdminPage: React.FC = () => {
             {selectedProduct && (
               <div className="space-y-6">
                 {['80ml', '120ml', '250ml', '500ml', '1000ml'].map((size) => {
-                  const inventoryItem = localInventory.find(
-                    item => item.product_id === selectedProduct && item.size === size
-                  );
-                  const product = products.find(p => p.id === selectedProduct);
-                  const defaultPrice = product?.prices?.[size as Size] || 0;
+                  const inventoryItem = getInventoryItem(selectedProduct, size as Size);
 
                   return (
                     <div key={size} className="flex items-center gap-4 p-4 bg-warm-gray-50 rounded-lg">
@@ -297,7 +318,7 @@ const AdminPage: React.FC = () => {
                           <input
                             type="number"
                             min="0"
-                            value={inventoryItem?.available_quantity || 0}
+                            value={inventoryItem.available_quantity}
                             onChange={(e) => handleInventoryChange(
                               selectedProduct,
                               size as Size,
@@ -312,10 +333,8 @@ const AdminPage: React.FC = () => {
                             Preço (R$)
                           </label>
                           <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={inventoryItem?.price || defaultPrice}
+                            type="text"
+                            value={formatCurrency(String(inventoryItem.price * 100))}
                             onChange={(e) => handleInventoryChange(
                               selectedProduct,
                               size as Size,
