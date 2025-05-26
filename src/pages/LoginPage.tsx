@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogIn } from 'lucide-react';
+import { LogIn, Home } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import Logo from '../components/Logo';
 
@@ -47,6 +47,14 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Link 
+        to="/" 
+        className="fixed top-4 left-4 flex items-center gap-2 text-warm-gray-600 hover:text-primary transition-colors"
+      >
+        <Home size={20} />
+        <span>Voltar ao site</span>
+      </Link>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

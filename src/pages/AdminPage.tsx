@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Package, DollarSign, ShoppingBag, TrendingUp, AlertCircle, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Package, DollarSign, ShoppingBag, TrendingUp, AlertCircle, LogOut, Home } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { Product, Size } from '../types';
-import { products as frontendProducts } from '../data/products';
+import debounce from 'lodash/debounce';
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
@@ -87,7 +87,7 @@ const AdminPage: React.FC = () => {
     navigate('/login');
   };
 
-  const updateInventory = async (productId: string, size: Size, quantity: number | string, price: number | string) => {
+  const debouncedUpdateInventory = debounce(async (productId: string, size: Size, quantity: number | string, price: number | string) => {
     try {
       // Validate product exists in Supabase
       const productExists = products.some(p => p.id === productId);
@@ -118,7 +118,7 @@ const AdminPage: React.FC = () => {
     } catch (err: any) {
       setError(err.message);
     }
-  };
+  }, 500);
 
   if (isLoading) {
     return (
@@ -139,7 +139,16 @@ const AdminPage: React.FC = () => {
           transition={{ duration: 0.5 }}
         >
           <div className="flex justify-between items-center mb-8">
-            <h1 className="font-heading text-3xl font-bold">Painel Administrativo</h1>
+            <div className="flex items-center gap-4">
+              <Link 
+                to="/" 
+                className="flex items-center gap-2 text-warm-gray-600 hover:text-primary transition-colors"
+              >
+                <Home size={20} />
+                <span>Voltar ao site</span>
+              </Link>
+              <h1 className="font-heading text-3xl font-bold">Painel Administrativo</h1>
+            </div>
             <button
               onClick={handleLogout}
               className="flex items-center px-4 py-2 bg-warm-gray-100 hover:bg-warm-gray-200 rounded-lg transition-colors"
@@ -236,8 +245,8 @@ const AdminPage: React.FC = () => {
                   const inventoryItem = inventory.find(
                     item => item.product_id === selectedProduct && item.size === size
                   );
-                  const product = frontendProducts.find(p => p.id === selectedProduct);
-                  const defaultPrice = product ? product.prices[size as Size] : 0;
+                  const product = products.find(p => p.id === selectedProduct);
+                  const defaultPrice = product?.prices?.[size as Size] || 0;
 
                   return (
                     <div key={size} className="flex items-center gap-4 p-4 bg-warm-gray-50 rounded-lg">
@@ -253,7 +262,7 @@ const AdminPage: React.FC = () => {
                             type="number"
                             min="0"
                             value={inventoryItem?.available_quantity || 0}
-                            onChange={(e) => updateInventory(
+                            onChange={(e) => debouncedUpdateInventory(
                               selectedProduct,
                               size as Size,
                               e.target.value,
@@ -271,7 +280,7 @@ const AdminPage: React.FC = () => {
                             min="0"
                             step="0.01"
                             value={inventoryItem?.price || defaultPrice}
-                            onChange={(e) => updateInventory(
+                            onChange={(e) => debouncedUpdateInventory(
                               selectedProduct,
                               size as Size,
                               inventoryItem?.available_quantity || 0,
