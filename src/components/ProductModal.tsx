@@ -7,6 +7,7 @@ import QuantitySelector from './QuantitySelector';
 
 interface ProductModalProps {
   product: Product;
+  inventory: any[];
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (size: Size, quantity: number) => void;
@@ -14,12 +15,23 @@ interface ProductModalProps {
 
 const ProductModal: React.FC<ProductModalProps> = ({
   product,
+  inventory,
   isOpen,
   onClose,
   onAddToCart,
 }) => {
   const [selectedSize, setSelectedSize] = React.useState<Size>('250ml');
   const [quantity, setQuantity] = React.useState(1);
+
+  const getPrice = () => {
+    const inventoryItem = inventory.find(item => item.size === selectedSize);
+    return inventoryItem ? inventoryItem.price : 0;
+  };
+
+  const getAvailableQuantity = () => {
+    const inventoryItem = inventory.find(item => item.size === selectedSize);
+    return inventoryItem ? inventoryItem.available_quantity : 0;
+  };
 
   const handleAddToCart = () => {
     onAddToCart(selectedSize, quantity);
@@ -65,7 +77,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 <h3 className="font-heading text-2xl font-semibold mb-2">{product.name}</h3>
                 <p className="text-warm-gray-600 mb-6">{product.description}</p>
 
-                <SizeSelector selectedSize={selectedSize} onChange={setSelectedSize} />
+                <SizeSelector 
+                  selectedSize={selectedSize} 
+                  onChange={setSelectedSize}
+                  inventory={inventory}
+                />
 
                 <div className="flex justify-between items-center mb-6">
                   <div className="space-y-2">
@@ -73,12 +89,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     <QuantitySelector
                       quantity={quantity}
                       onChange={setQuantity}
+                      max={getAvailableQuantity()}
                     />
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-warm-gray-500">Preço unitário</p>
                     <p className="font-medium text-lg">
-                      R$ {product.prices[selectedSize].toFixed(2)}
+                      R$ {getPrice().toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -87,17 +104,27 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-medium">Total:</span>
                     <span className="font-medium text-xl text-primary">
-                      R$ {(product.prices[selectedSize] * quantity).toFixed(2)}
+                      R$ {(getPrice() * quantity).toFixed(2)}
                     </span>
                   </div>
 
                   <button
                     onClick={handleAddToCart}
-                    className="w-full bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center"
+                    disabled={getAvailableQuantity() < quantity}
+                    className="w-full bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ShoppingBag size={18} className="mr-2" />
-                    Adicionar ao Carrinho
+                    {getAvailableQuantity() < quantity 
+                      ? 'Produto Indisponível'
+                      : 'Adicionar ao Carrinho'
+                    }
                   </button>
+
+                  {getAvailableQuantity() < quantity && (
+                    <p className="text-red-500 text-sm text-center mt-2">
+                      Quantidade disponível: {getAvailableQuantity()}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

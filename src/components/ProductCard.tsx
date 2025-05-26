@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Award, Star } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import ProductModal from './ProductModal';
+import { supabase } from '../lib/supabaseClient';
 
 interface ProductCardProps {
   product: Product;
@@ -11,12 +12,36 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
-  const { id, name, description, image, prices, featured, isNew } = product;
+  const { id, name, description, image, featured, isNew } = product;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addToCart } = useCart();
+  const [inventory, setInventory] = useState<any[]>([]);
+  
+  useEffect(() => {
+    fetchInventory();
+  }, [id]);
+
+  const fetchInventory = async () => {
+    const { data, error } = await supabase
+      .from('inventory')
+      .select('*')
+      .eq('product_id', id);
+    
+    if (!error && data) {
+      setInventory(data);
+    }
+  };
   
   const handleAddToCart = (size: Size, quantity: number) => {
-    addToCart(product, size, quantity);
+    const inventoryItem = inventory.find(item => item.size === size);
+    if (inventoryItem && inventoryItem.available_quantity >= quantity) {
+      addToCart(product, size, quantity);
+    }
+  };
+
+  const getLowestPrice = () => {
+    if (inventory.length === 0) return 0;
+    return Math.min(...inventory.map(item => item.price));
   };
   
   return (
@@ -57,7 +82,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
             <div>
               <span className="text-xs text-warm-gray-500">A partir de</span>
               <p className="text-primary font-semibold">
-                R$ {Math.min(...Object.values(prices)).toFixed(2)}
+                R$ {getLowestPrice().toFixed(2)}
               </p>
             </div>
             <div className="bg-primary/10 hover:bg-primary/20 text-primary rounded-full p-2 transition-colors">
@@ -69,6 +94,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
 
       <ProductModal
         product={product}
+        inventory={inventory}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddToCart={handleAddToCart}

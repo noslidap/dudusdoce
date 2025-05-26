@@ -87,7 +87,7 @@ const AdminPage: React.FC = () => {
     navigate('/login');
   };
 
-  const debouncedUpdateInventory = debounce(async (productId: string, size: Size, quantity: number | string, price: number | string) => {
+  const updateInventory = async (productId: string, size: Size, quantity: number | string, price: number | string) => {
     try {
       // Validate product exists in Supabase
       const productExists = products.some(p => p.id === productId);
@@ -118,7 +118,10 @@ const AdminPage: React.FC = () => {
     } catch (err: any) {
       setError(err.message);
     }
-  }, 500);
+  };
+
+  // Debounced version of updateInventory
+  const debouncedUpdateInventory = debounce(updateInventory, 1000);
 
   if (isLoading) {
     return (
@@ -140,13 +143,13 @@ const AdminPage: React.FC = () => {
         >
           <div className="flex justify-between items-center mb-8">
             <div className="flex items-center gap-4">
-              <Link 
-                to="/" 
+              <a 
+                href="/"
                 className="flex items-center gap-2 text-warm-gray-600 hover:text-primary transition-colors"
               >
                 <Home size={20} />
                 <span>Voltar ao site</span>
-              </Link>
+              </a>
               <h1 className="font-heading text-3xl font-bold">Painel Administrativo</h1>
             </div>
             <button
