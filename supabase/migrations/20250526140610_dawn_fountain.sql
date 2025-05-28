@@ -17,7 +17,7 @@ VALUES
   ('pudim-tradicional', 'Pudim Tradicional', 'O clássico pudim de leite condensado, cremoso e com uma calda dourada perfeita.', 'https://raw.githubusercontent.com/your-repo/pudim-tradicional.png', true, false),
   ('pudim-chocolate', 'Pudim de Chocolate', 'Pudim de chocolate belga com calda de chocolate meio amargo.', 'https://raw.githubusercontent.com/your-repo/pudim-chocolate.png', false, false),
   ('pudim-doce-de-leite', 'Pudim de Doce de Leite', 'Pudim com doce de leite argentino, uma combinação irresistível.', 'https://raw.githubusercontent.com/your-repo/pudim-doce-de-leite.png', true, false),
-  ('pudim-ninho-nutella', 'Pudim de Ninho com Nutella', 'A combinação perfeita de leite Ninho com Nutella.', 'https://raw.githubusercontent.com/your-repo/pudim-ninho-nutella.png', false, true),
+  ('pudim-ninho-nutella', 'Pudim de Ninho com Nutella', 'A combinação perfeita de leite Ninho com Nutella.', 'https://raw.githubusercontent.com/your-repo/pudim-ninho-nutella.png', false, false),
   ('pudim-pistache', 'Pudim de Pistache', 'Pudim de pistache importado com pedaços crocantes.', 'https://raw.githubusercontent.com/your-repo/pudim-pistache.png', false, false),
   ('pudim-brigadeiro', 'Pudim de Brigadeiro', 'Pudim com brigadeiro cremoso e granulado.', 'https://raw.githubusercontent.com/your-repo/pudim-brigadeiro.png', false, false),
   ('pudim-chocolate-branco', 'Pudim de Chocolate Branco', 'Pudim de chocolate branco belga com calda especial.', 'https://raw.githubusercontent.com/your-repo/pudim-chocolate-branco.png', false, false),
@@ -30,3 +30,8 @@ SET
   image = EXCLUDED.image,
   featured = EXCLUDED.featured,
   is_new = EXCLUDED.is_new;
+
+-- Atualizar o pudim de ninho com nutella para não ser mais novidade
+UPDATE products 
+SET is_new = false 
+WHERE id = 'pudim-ninho-nutella';

@@ -66,7 +66,6 @@ const Contact: React.FC = () => {
                 <div>
                   <h4 className="font-medium text-lg mb-1">Endereço</h4>
                   <p className="text-warm-gray-700">São Paulo, SP - Brasil</p>
-                  <p className="text-warm-gray-500 text-sm">Entregamos em toda a região metropolitana</p>
                 </div>
               </div>
               
@@ -106,13 +105,6 @@ const Contact: React.FC = () => {
                   Clique para fazer seu pedido diretamente pelo WhatsApp
                 </p>
               </form>
-            </div>
-
-            <div className="mt-8 bg-primary/10 rounded-lg p-6">
-              <h4 className="font-heading text-xl font-semibold mb-4">Entrega</h4>
-              <p className="text-warm-gray-700">
-                Entregamos em toda a região metropolitana de São Paulo. Faça seu pedido com pelo menos 24 horas de antecedência para garantir disponibilidade.
-              </p>
             </div>
           </motion.div>
         </div>

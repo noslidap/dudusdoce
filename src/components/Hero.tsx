@@ -26,12 +26,6 @@ const Hero: React.FC = () => {
               Ver Cardápio
               <ArrowRight size={18} className="ml-2" />
             </a>
-            <a
-              href="#contact"
-              className="btn-outline inline-flex items-center justify-center"
-            >
-              Fazer Pedido
-            </a>
           </div>
         </motion.div>
         

@@ -3,7 +3,7 @@ import { Size } from '../types';
 import { sizes } from '../data/products';
 
 interface SizeSelectorProps {
-  selectedSize: Size;
+  selectedSize: Size | '';
   onChange: (size: Size) => void;
   inventory?: any[];
 }
@@ -27,12 +27,11 @@ const SizeSelector: React.FC<SizeSelectorProps> = ({ selectedSize, onChange, inv
             <button
               key={size.value}
               onClick={() => onChange(size.value as Size)}
-              disabled={isOutOfStock}
               className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all ${
                 selectedSize === size.value
                   ? 'bg-primary/10 border-2 border-primary text-primary'
                   : isOutOfStock
-                  ? 'bg-warm-gray-100 border-2 border-transparent opacity-50 cursor-not-allowed'
+                  ? 'bg-warm-gray-100 border-2 border-transparent hover:border-warm-gray-300'
                   : 'bg-warm-gray-50 border-2 border-transparent hover:border-primary/30'
               }`}
             >

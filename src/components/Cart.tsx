@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, MessageCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import QuantitySelector from './QuantitySelector';
+import { supabase } from '../lib/supabaseClient';
 
 const Cart: React.FC = () => {
   const { items, isCartOpen, toggleCart, removeFromCart, updateQuantity } = useCart();
+  const [stockMap, setStockMap] = useState<{ [key: string]: number }>({});
+
+  useEffect(() => {
+    const fetchStock = async () => {
+      const productIds = Array.from(new Set(items.map(item => item.product.id)));
+      if (productIds.length === 0) return;
+      const { data, error } = await supabase
+        .from('inventory')
+        .select('product_id, size, available_quantity')
+        .in('product_id', productIds);
+      if (error) return;
+      const map: { [key: string]: number } = {};
+      data.forEach((inv: any) => {
+        map[`${inv.product_id}-${inv.size}`] = inv.available_quantity;
+      });
+      setStockMap(map);
+    };
+    fetchStock();
+  }, [items]);
 
   const total = items.reduce((sum, item) => (
-    sum + item.product.prices[item.size] * item.quantity
+    sum + item.price * item.quantity
   ), 0);
 
   const handleWhatsAppOrder = () => {
@@ -16,7 +36,7 @@ const Cart: React.FC = () => {
       `*${item.product.name}*\n` +
       `Tamanho: ${item.size}\n` +
       `Quantidade: ${item.quantity}\n` +
-      `Subtotal: R$ ${(item.product.prices[item.size] * item.quantity).toFixed(2)}\n`
+      `Subtotal: R$ ${(item.price * item.quantity).toFixed(2)}\n`
     )).join('\n') + `\n*Total: R$ ${total.toFixed(2)}*`;
 
     const whatsappUrl = `https://wa.me/5511961729140?text=${encodeURIComponent(message)}`;
@@ -77,6 +97,7 @@ const Cart: React.FC = () => {
                             <QuantitySelector
                               quantity={item.quantity}
                               onChange={(qty) => updateQuantity(item.product, item.size, qty)}
+                              max={stockMap[`${item.product.id}-${item.size}`] || 1}
                             />
                             <button
                               onClick={() => removeFromCart(item.product, item.size)}
@@ -87,7 +108,7 @@ const Cart: React.FC = () => {
                             </button>
                           </div>
                           <p className="text-right mt-2 font-medium">
-                            R$ {(item.product.prices[item.size] * item.quantity).toFixed(2)}
+                            R$ {(item.price * item.quantity).toFixed(2)}
                           </p>
                         </div>
                       </div>

@@ -5,11 +5,12 @@ interface CartItem {
   product: Product;
   size: Size;
   quantity: number;
+  price: number;
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Product, size: Size, quantity: number) => void;
+  addToCart: (product: Product, size: Size, quantity: number, price: number) => void;
   removeFromCart: (product: Product, size: Size) => void;
   updateQuantity: (product: Product, size: Size, quantity: number) => void;
   clearCart: () => void;
@@ -23,21 +24,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const addToCart = useCallback((product: Product, size: Size, quantity: number) => {
-    setItems(currentItems => {
-      const existingItem = currentItems.find(
-        item => item.product.id === product.id && item.size === size
+  const addToCart = useCallback((product: Product, size: Size, quantity: number, price: number) => {
+    setItems((prevItems) => {
+      const existingIndex = prevItems.findIndex(
+        (item) => item.product.id === product.id && item.size === size
       );
-
-      if (existingItem) {
-        return currentItems.map(item =>
-          item.product.id === product.id && item.size === size
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
+      if (existingIndex !== -1) {
+        const updatedItems = [...prevItems];
+        updatedItems[existingIndex].quantity += quantity;
+        return updatedItems;
+      } else {
+        return [...prevItems, { product, size, quantity, price }];
       }
-
-      return [...currentItems, { product, size, quantity }];
     });
     setIsCartOpen(true);
   }, []);
@@ -51,8 +49,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const updateQuantity = useCallback((product: Product, size: Size, quantity: number) => {
-    setItems(currentItems =>
-      currentItems.map(item =>
+    setItems((prevItems) =>
+      prevItems.map((item) =>
         item.product.id === product.id && item.size === size
           ? { ...item, quantity }
           : item

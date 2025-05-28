@@ -7,7 +7,7 @@ export interface Product {
     [key: string]: number;
   };
   featured?: boolean;
-  isNew?: boolean;
+  is_new?: boolean;
 }
 
 export type Size = '80ml' | '120ml' | '250ml' | '500ml' | '1000ml';
