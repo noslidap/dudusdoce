@@ -25,12 +25,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   const getPrice = () => {
     const inventoryItem = inventory.find(item => item.size === selectedSize);
-    return inventoryItem ? Number(inventoryItem.price) : 0;
+    return inventoryItem ? parseFloat(inventoryItem.price) : 0;
   };
 
   const getAvailableQuantity = () => {
     const inventoryItem = inventory.find(item => item.size === selectedSize);
-    return inventoryItem ? inventoryItem.available_quantity : 0;
+    return inventoryItem ? parseInt(inventoryItem.available_quantity) : 0;
   };
 
   const handleAddToCart = () => {

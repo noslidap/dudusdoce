@@ -30,13 +30,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
         .select('*')
         .eq('product_id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching inventory:', error);
+        return;
+      }
+
       if (data) {
-        console.log('Inventory data for', id, ':', data);
         setInventory(data);
       }
-    } catch (error) {
-      console.error('Error fetching inventory:', error);
+    } catch (err) {
+      console.error('Error in fetchInventory:', err);
     } finally {
       setIsLoading(false);
     }
@@ -50,10 +53,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
   };
 
   const getLowestPrice = () => {
-    if (inventory.length === 0) return 0;
-    const prices = inventory.map(item => Number(item.price));
-    console.log('Prices for', id, ':', prices);
-    return Math.min(...prices);
+    if (!inventory || inventory.length === 0) return null;
+    const validPrices = inventory
+      .map(item => parseFloat(item.price))
+      .filter(price => !isNaN(price) && price > 0);
+    return validPrices.length > 0 ? Math.min(...validPrices) : null;
   };
   
   return (
@@ -96,8 +100,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
               <p className="text-primary font-semibold">
                 {isLoading ? (
                   <span className="text-warm-gray-400">Carregando...</span>
-                ) : inventory.length > 0 ? (
-                  `R$ ${getLowestPrice().toFixed(2)}`
+                ) : getLowestPrice() !== null ? (
+                  `R$ ${getLowestPrice()?.toFixed(2)}`
                 ) : (
                   <span className="text-warm-gray-400">Indisponível</span>
                 )}
