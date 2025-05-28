@@ -30,7 +30,7 @@ const SizeSelector: React.FC<SizeSelectorProps> = ({
   const orderedSizes = sizeOrder.filter(size => sizes.includes(size));
 
   return (
-    <div className="grid grid-cols-5 gap-2 mb-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-4">
       {orderedSizes.map((size) => {
         const availableQuantity = getAvailableQuantity(size);
         const isAvailable = availableQuantity > 0;
