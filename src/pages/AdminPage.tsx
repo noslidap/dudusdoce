@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Package, DollarSign, ShoppingBag, AlertCircle, LogOut, Home, Save, GripVertical } from 'lucide-react';
+import { Package, AlertCircle, LogOut, Home, Save, GripVertical } from 'lucide-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { Product, Size } from '../types';

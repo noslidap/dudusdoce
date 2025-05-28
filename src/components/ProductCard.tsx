@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
-import { Product, Size } from '../types';
-import { useCart } from '../context/CartContext';
+import { Product } from '../types';
 import ProductModal from './ProductModal';
 import { supabase } from '../lib/supabaseClient';
 
@@ -14,7 +13,6 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
   const { id, name, description, image, featured, is_new } = product;
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { addToCart } = useCart();
   const [inventory, setInventory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -55,13 +53,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
     }
   };
   
-  const handleAddToCart = (size: Size, quantity: number) => {
-    const inventoryItem = inventory.find(item => item.size === size);
-    if (inventoryItem && inventoryItem.available_quantity >= quantity) {
-      addToCart(product, size, quantity, parseFloat(inventoryItem.price));
-    }
-  };
-
   const getLowestPrice = () => {
     if (!inventory || inventory.length === 0) return null;
     const validPrices = inventory
@@ -131,7 +122,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         product={product}
-        inventory={inventory}
       />
     </>
   );

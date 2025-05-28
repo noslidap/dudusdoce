@@ -1,32 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, MessageCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import QuantitySelector from './QuantitySelector';
-import { supabase } from '../lib/supabaseClient';
 import { Size } from '../types';
 
 const Cart: React.FC = () => {
   const { items, isCartOpen, toggleCart, removeFromCart, updateQuantity } = useCart();
-  const [stockMap, setStockMap] = useState<{ [key: string]: number }>({});
-
-  useEffect(() => {
-    const fetchStock = async () => {
-      const productIds = Array.from(new Set(items.map(item => item.product.id)));
-      if (productIds.length === 0) return;
-      const { data, error } = await supabase
-        .from('inventory')
-        .select('product_id, size, available_quantity')
-        .in('product_id', productIds);
-      if (error) return;
-      const map: { [key: string]: number } = {};
-      data.forEach((inv: any) => {
-        map[`${inv.product_id}-${inv.size}`] = inv.available_quantity;
-      });
-      setStockMap(map);
-    };
-    fetchStock();
-  }, [items]);
 
   useEffect(() => {
     if (isCartOpen) {

@@ -181,7 +181,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   sizes={Object.keys(inventory) as Size[]}
                   selectedSize={selectedSize} 
                   onSelect={handleSizeChange}
-                  inventory={inventory}
                   getAvailableQuantity={getAvailableQuantity}
                 />
 

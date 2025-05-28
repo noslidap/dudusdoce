@@ -5,7 +5,6 @@ interface SizeSelectorProps {
   sizes: Size[];
   selectedSize: Size | '';
   onSelect: (size: Size) => void;
-  inventory: Record<Size, { available_quantity: number; price: number }>;
   getAvailableQuantity: (size: Size) => number;
 }
 
@@ -23,7 +22,6 @@ const SizeSelector: React.FC<SizeSelectorProps> = ({
   sizes,
   selectedSize,
   onSelect,
-  inventory,
   getAvailableQuantity
 }) => {
   // Ordena os tamanhos na ordem correta
