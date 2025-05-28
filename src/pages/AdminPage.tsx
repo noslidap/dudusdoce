@@ -619,7 +619,7 @@ const AdminPage: React.FC = () => {
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8 overflow-x-auto">
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8 mt-8 overflow-x-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Gerenciar Produtos</h2>
             </div>

@@ -41,12 +41,14 @@ const Cart: React.FC = () => {
   };
 
   const handleWhatsAppOrder = () => {
-    const message = items.map(item => (
-      `*${item.product.name}*\n` +
-      `Tamanho: ${item.size}\n` +
-      `Quantidade: ${item.quantity}\n` +
-      `Subtotal: R$ ${(item.price * item.quantity).toFixed(2)}\n`
-    )).join('\n') + `\n*Total: R$ ${total.toFixed(2)}*`;
+    const message =
+      'Olá! Gostaria de fazer um pedido 🍮:%0A%0A' +
+      items.map(item => (
+        `*${item.product.name}*\n` +
+        `Tamanho: ${item.size}\n` +
+        `Quantidade: ${item.quantity}\n` +
+        `Subtotal: R$ ${(item.price * item.quantity).toFixed(2)}\n`
+      )).join('\n') + `\n*Total: R$ ${total.toFixed(2)}*`;
 
     const whatsappUrl = `https://wa.me/5511961729140?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');

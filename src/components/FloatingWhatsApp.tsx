@@ -5,7 +5,7 @@ const FloatingWhatsApp: React.FC = () => {
   const phoneNumber = '5511961729140'; // Brazilian number format for WhatsApp
   
   const openWhatsApp = () => {
-    const url = `https://wa.me/${phoneNumber}?text=Olá! Gostaria de fazer um pedido no Dudu's Sweet Dessert.`;
+    const url = `https://wa.me/${phoneNumber}?text=Olá! Gostaria de fazer um pedido.`;
     window.open(url, '_blank');
   };
 

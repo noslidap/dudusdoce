@@ -6,7 +6,7 @@ const Contact: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const phoneNumber = '5511961729140';
-    const message = 'Olá! Gostaria de fazer um pedido no Dudu\'s Sweet Dessert.';
+    const message = 'Olá! Gostaria de fazer um pedido.';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
