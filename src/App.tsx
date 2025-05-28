@@ -10,6 +10,8 @@ import Cart from './components/Cart';
 import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
 import { CartProvider } from './context/CartContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function AppRoutes() {
   const location = useLocation();
@@ -53,11 +55,14 @@ function AppRoutes() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <CartProvider>
-        <AppRoutes />
-      </CartProvider>
-    </BrowserRouter>
+    <>
+      <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} closeOnClick pauseOnHover draggable theme="colored" />
+      <BrowserRouter>
+        <CartProvider>
+          <AppRoutes />
+        </CartProvider>
+      </BrowserRouter>
+    </>
   );
 }
 

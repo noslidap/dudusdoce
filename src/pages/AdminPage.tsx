@@ -102,6 +102,10 @@ const AdminPage: React.FC = () => {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const checkAuth = async () => {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error || !session) {

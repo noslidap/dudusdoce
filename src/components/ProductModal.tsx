@@ -111,7 +111,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
     addToCart(product, selectedSize, quantity, getPrice());
     toast.success('Produto adicionado ao carrinho!');
-    onClose();
+    setTimeout(() => {
+      onClose();
+    }, 200);
   };
 
   // Atualizar quantidade quando mudar o tamanho
