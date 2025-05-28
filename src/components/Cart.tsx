@@ -4,6 +4,7 @@ import { X, Trash2, MessageCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import QuantitySelector from './QuantitySelector';
 import { supabase } from '../lib/supabaseClient';
+import { Size } from '../types';
 
 const Cart: React.FC = () => {
   const { items, isCartOpen, toggleCart, removeFromCart, updateQuantity } = useCart();
@@ -30,6 +31,14 @@ const Cart: React.FC = () => {
   const total = items.reduce((sum, item) => (
     sum + item.price * item.quantity
   ), 0);
+
+  const handleQuantityChange = (productId: string, size: Size, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId, size);
+    } else {
+      updateQuantity(productId, size, newQuantity);
+    }
+  };
 
   const handleWhatsAppOrder = () => {
     const message = items.map(item => (
@@ -79,9 +88,9 @@ const Cart: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {items.map((item, index) => (
+                  {items.map((item) => (
                     <div
-                      key={`${item.product.id}-${item.size}-${index}`}
+                      key={`${item.product.id}-${item.size}`}
                       className="bg-white rounded-lg border border-warm-gray-200 p-4"
                     >
                       <div className="flex gap-4">
@@ -94,13 +103,23 @@ const Cart: React.FC = () => {
                           <h3 className="font-medium">{item.product.name}</h3>
                           <p className="text-sm text-warm-gray-500">Tamanho: {item.size}</p>
                           <div className="mt-2 flex items-center justify-between">
-                            <QuantitySelector
-                              quantity={item.quantity}
-                              onChange={(qty) => updateQuantity(item.product, item.size, qty)}
-                              max={stockMap[`${item.product.id}-${item.size}`] || 1}
-                            />
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleQuantityChange(item.product.id, item.size, item.quantity - 1)}
+                                className="p-1 hover:bg-warm-gray-100 rounded transition-colors"
+                              >
+                                -
+                              </button>
+                              <span>{item.quantity}</span>
+                              <button
+                                onClick={() => handleQuantityChange(item.product.id, item.size, item.quantity + 1)}
+                                className="p-1 hover:bg-warm-gray-100 rounded transition-colors"
+                              >
+                                +
+                              </button>
+                            </div>
                             <button
-                              onClick={() => removeFromCart(item.product, item.size)}
+                              onClick={() => removeFromCart(item.product.id, item.size)}
                               className="text-warm-gray-400 hover:text-red-500 transition-colors"
                               aria-label="Remover item"
                             >

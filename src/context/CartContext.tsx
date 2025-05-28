@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { Product, Size } from '../types';
 
 interface CartItem {
@@ -11,9 +11,10 @@ interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addToCart: (product: Product, size: Size, quantity: number, price: number) => void;
-  removeFromCart: (product: Product, size: Size) => void;
-  updateQuantity: (product: Product, size: Size, quantity: number) => void;
+  removeFromCart: (productId: string, size: Size) => void;
+  updateQuantity: (productId: string, size: Size, quantity: number) => void;
   clearCart: () => void;
+  getItemQuantity: (productId: string, size: Size) => number;
   isCartOpen: boolean;
   toggleCart: () => void;
 }
@@ -23,6 +24,17 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      setItems(JSON.parse(savedCart));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(items));
+  }, [items]);
 
   const addToCart = useCallback((product: Product, size: Size, quantity: number, price: number) => {
     setItems((prevItems) => {
@@ -40,18 +52,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsCartOpen(true);
   }, []);
 
-  const removeFromCart = useCallback((product: Product, size: Size) => {
+  const removeFromCart = useCallback((productId: string, size: Size) => {
     setItems(currentItems =>
       currentItems.filter(
-        item => !(item.product.id === product.id && item.size === size)
+        item => !(item.product.id === productId && item.size === size)
       )
     );
   }, []);
 
-  const updateQuantity = useCallback((product: Product, size: Size, quantity: number) => {
+  const updateQuantity = useCallback((productId: string, size: Size, quantity: number) => {
     setItems((prevItems) =>
       prevItems.map((item) =>
-        item.product.id === product.id && item.size === size
+        item.product.id === productId && item.size === size
           ? { ...item, quantity }
           : item
       )
@@ -66,6 +78,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsCartOpen(prev => !prev);
   }, []);
 
+  const getItemQuantity = (productId: string, size: Size) => {
+    const item = items.find(item => item.product.id === productId && item.size === size);
+    return item ? item.quantity : 0;
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -74,6 +91,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         removeFromCart,
         updateQuantity,
         clearCart,
+        getItemQuantity,
         isCartOpen,
         toggleCart,
       }}

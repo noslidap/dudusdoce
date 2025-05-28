@@ -21,18 +21,13 @@ const Menu: React.FC = () => {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('products')
-        .select('*');
+        .select('*')
+        .order('order', { ascending: true });
 
-      if (error) {
-        console.error('Erro ao buscar produtos:', error);
-        return;
-      }
-
-      if (data) {
-        setProducts(data.sort((a, b) => a.name.localeCompare(b.name)));
-      }
-    } catch (err) {
-      console.error('Erro ao buscar produtos:', err);
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar produtos:', error);
     } finally {
       setIsLoading(false);
     }

@@ -1,11 +1,81 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Package, DollarSign, ShoppingBag, AlertCircle, LogOut, Home, Save } from 'lucide-react';
+import { Package, DollarSign, ShoppingBag, AlertCircle, LogOut, Home, Save, GripVertical } from 'lucide-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { Product, Size } from '../types';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Componente de item arrastável
+const SortableProduct = ({ product, onLabelChange }: { product: Product, onLabelChange: (id: string, label: 'featured' | 'is_new', value: boolean) => void }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: product.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-4 p-4 bg-warm-gray-50 rounded-lg mb-2"
+    >
+      <div className="cursor-grab" {...attributes} {...listeners}>
+        <GripVertical className="text-warm-gray-400" size={20} />
+      </div>
+      <div className="flex-1">
+        <h4 className="font-medium">{product.name}</h4>
+      </div>
+      <div className="flex gap-4">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={product.featured}
+            onChange={(e) => onLabelChange(product.id, 'featured', e.target.checked)}
+            className="rounded border-warm-gray-300 text-primary focus:ring-primary"
+          />
+          <span>Destaque</span>
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={product.is_new}
+            onChange={(e) => onLabelChange(product.id, 'is_new', e.target.checked)}
+            className="rounded border-warm-gray-300 text-primary focus:ring-primary"
+          />
+          <span>Novidade</span>
+        </label>
+      </div>
+    </div>
+  );
+};
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +90,13 @@ const AdminPage: React.FC = () => {
     stock: 0,
     outOfStock: 0
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     checkAuth();
@@ -40,7 +117,8 @@ const AdminPage: React.FC = () => {
       
       const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select('*');
+        .select('*')
+        .order('order', { ascending: true });
 
       if (productsError) throw productsError;
       setProducts(productsData || []);
@@ -186,7 +264,16 @@ const AdminPage: React.FC = () => {
         p.id === productId ? { ...p, [label]: value } : p
       ));
 
-      toast.success('Produto atualizado com sucesso!');
+      toast.success('Produto atualizado com sucesso!', {
+        position: "top-center",
+        autoClose: 2500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
     } catch (err: any) {
       toast.error('Erro ao atualizar produto');
       console.error(err);
@@ -277,6 +364,45 @@ const AdminPage: React.FC = () => {
       console.error(err);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      setProducts((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        
+        // Atualizar a ordem no banco de dados
+        newItems.forEach(async (item, index) => {
+          const { error } = await supabase
+            .from('products')
+            .update({ "order": index })
+            .eq('id', item.id);
+            
+          if (error) {
+            console.error('Erro ao atualizar ordem:', error);
+            toast.error('Erro ao atualizar ordem dos produtos');
+          }
+        });
+
+        toast.success('Ordem atualizada com sucesso!', {
+          position: "top-center",
+          autoClose: 2500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        
+        return newItems;
+      });
     }
   };
 
@@ -392,30 +518,6 @@ const AdminPage: React.FC = () => {
               <>
                 <div className="mb-6 p-4 bg-warm-gray-50 rounded-lg">
                   <div className="flex flex-col md:flex-row gap-6">
-                    <div>
-                      <h3 className="font-medium mb-3">Labels do Produto</h3>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={products.find(p => p.id === selectedProduct)?.featured || false}
-                            onChange={(e) => handleProductLabelChange(selectedProduct, 'featured', e.target.checked)}
-                            className="rounded border-warm-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span>Destaque</span>
-                        </label>
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={products.find(p => p.id === selectedProduct)?.is_new || false}
-                            onChange={(e) => handleProductLabelChange(selectedProduct, 'is_new', e.target.checked)}
-                            className="rounded border-warm-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span>Novidade</span>
-                        </label>
-                      </div>
-                    </div>
-
                     <div className="border-l border-warm-gray-200 pl-6">
                       <h3 className="font-medium mb-3">Gerenciar Estoque em Massa</h3>
                       <div className="flex flex-col sm:flex-row gap-3">
@@ -514,6 +616,37 @@ const AdminPage: React.FC = () => {
                 </div>
               </>
             )}
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">Gerenciar Produtos</h2>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-warm-gray-600 mb-4">
+                Arraste os produtos para reordená-los. A ordem será salva automaticamente.
+              </p>
+              
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={products.map(p => p.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {products.map((product) => (
+                    <SortableProduct
+                      key={product.id}
+                      product={product}
+                      onLabelChange={handleProductLabelChange}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            </div>
           </div>
         </motion.div>
       </div>

@@ -1,53 +1,58 @@
 import React from 'react';
 import { Size } from '../types';
-import { sizes } from '../data/products';
 
 interface SizeSelectorProps {
+  sizes: Size[];
   selectedSize: Size | '';
-  onChange: (size: Size) => void;
-  inventory?: any[];
+  onSelect: (size: Size) => void;
+  inventory: Record<Size, { available_quantity: number; price: number }>;
+  getAvailableQuantity: (size: Size) => number;
 }
 
-const SizeSelector: React.FC<SizeSelectorProps> = ({ selectedSize, onChange, inventory = [] }) => {
-  const getAvailableQuantity = (size: Size) => {
-    const inventoryItem = inventory.find(item => item.size === size);
-    return inventoryItem ? inventoryItem.available_quantity : 0;
-  };
+const sizeLabels: Record<Size, { label: string; volume: string }> = {
+  '80ml': { label: 'Individual', volume: '80ml' },
+  '120ml': { label: 'Pequeno', volume: '120ml' },
+  '250ml': { label: 'Médio', volume: '250ml' },
+  '500ml': { label: 'Grande', volume: '500ml' },
+  '1000ml': { label: 'Família', volume: '1000ml' },
+};
+
+const sizeOrder: Size[] = ['80ml', '120ml', '250ml', '500ml', '1000ml'];
+
+const SizeSelector: React.FC<SizeSelectorProps> = ({
+  sizes,
+  selectedSize,
+  onSelect,
+  inventory,
+  getAvailableQuantity
+}) => {
+  // Ordena os tamanhos na ordem correta
+  const orderedSizes = sizeOrder.filter(size => sizes.includes(size));
 
   return (
-    <div className="mb-6">
-      <h3 className="font-medium mb-3">Tamanho:</h3>
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        {sizes.map((size) => {
-          const [name, volume] = size.label.split(' ');
-          const availableQuantity = getAvailableQuantity(size.value as Size);
-          const isOutOfStock = availableQuantity === 0;
-
-          return (
-            <button
-              key={size.value}
-              onClick={() => onChange(size.value as Size)}
-              className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all ${
-                selectedSize === size.value
-                  ? 'bg-primary/10 border-2 border-primary text-primary'
-                  : isOutOfStock
-                  ? 'bg-warm-gray-100 border-2 border-transparent hover:border-warm-gray-300'
-                  : 'bg-warm-gray-50 border-2 border-transparent hover:border-primary/30'
-              }`}
-            >
-              <span className="text-sm font-medium whitespace-nowrap">{name}</span>
-              <span className="text-xs text-warm-gray-500 mt-1 whitespace-nowrap">
-                {size.value}
-              </span>
-              {isOutOfStock && (
-                <span className="text-xs text-red-500 mt-1">
-                  Indisponível
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+    <div className="grid grid-cols-5 gap-2 mb-4">
+      {orderedSizes.map((size) => {
+        const availableQuantity = getAvailableQuantity(size);
+        const isAvailable = availableQuantity > 0;
+        const { label, volume } = sizeLabels[size];
+        const isSelected = selectedSize === size;
+        return (
+          <button
+            key={size}
+            onClick={() => onSelect(size)}
+            className={`py-3 px-2 rounded-lg border text-center transition-colors flex flex-col items-center justify-center h-auto min-w-0 whitespace-nowrap
+              ${isSelected && isAvailable ? 'border-primary bg-primary/10 text-primary' : ''}
+              ${!isAvailable && isSelected ? 'border-red-500 bg-red-50 text-red-600' : ''}
+              ${!isAvailable && !isSelected ? 'border-red-200 bg-red-50 text-red-400' : ''}
+              ${isAvailable && !isSelected ? 'border-warm-gray-200 hover:border-primary hover:text-primary' : ''}
+            `}
+            style={{ fontSize: '1rem' }}
+          >
+            <span className={`${isAvailable ? 'font-medium' : 'font-normal'}`}>{label}</span>
+            <span className="text-xs text-warm-gray-500">{volume}</span>
+          </button>
+        );
+      })}
     </div>
   );
 };
