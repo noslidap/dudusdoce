@@ -181,8 +181,15 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       {selectedSize && getAvailableQuantity(selectedSize) > 0
                         ? `Estoque disponível: ${getAvailableQuantity(selectedSize)} unidade(s)`
                         : selectedSize && getAvailableQuantity(selectedSize) === 0
-                        ? 'Produto indisponível neste tamanho'
-                        : ''}
+                          ? (() => {
+                              const currentStock = inventory[selectedSize]?.available_quantity || 0;
+                              const quantityInCart = getItemQuantity(product.id, selectedSize);
+                              if (currentStock > 0 && quantityInCart >= currentStock) {
+                                return 'Produto indisponível neste tamanho, quantidade máxima já adicionada ao carrinho';
+                              }
+                              return 'Produto indisponível neste tamanho';
+                            })()
+                          : ''}
                     </span>
                   </div>
                   <div className="text-right">
