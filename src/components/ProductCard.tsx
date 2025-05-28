@@ -16,19 +16,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addToCart } = useCart();
   const [inventory, setInventory] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     fetchInventory();
   }, [id]);
 
   const fetchInventory = async () => {
-    const { data, error } = await supabase
-      .from('inventory')
-      .select('*')
-      .eq('product_id', id);
-    
-    if (!error && data) {
-      setInventory(data);
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('inventory')
+        .select('*')
+        .eq('product_id', id);
+      
+      if (error) throw error;
+      if (data) {
+        setInventory(data);
+      }
+    } catch (error) {
+      console.error('Error fetching inventory:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -41,7 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
 
   const getLowestPrice = () => {
     if (inventory.length === 0) return 0;
-    return Math.min(...inventory.map(item => item.price));
+    return Math.min(...inventory.map(item => Number(item.price)));
   };
   
   return (
@@ -82,7 +91,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
             <div>
               <span className="text-xs text-warm-gray-500">A partir de</span>
               <p className="text-primary font-semibold">
-                R$ {getLowestPrice().toFixed(2)}
+                {isLoading ? (
+                  <span className="text-warm-gray-400">Carregando...</span>
+                ) : (
+                  `R$ ${getLowestPrice().toFixed(2)}`
+                )}
               </p>
             </div>
             <div className="bg-primary/10 hover:bg-primary/20 text-primary rounded-full p-2 transition-colors">

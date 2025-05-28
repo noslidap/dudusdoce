@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag } from 'lucide-react';
 import { Product, Size } from '../types';
@@ -20,12 +20,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
   onClose,
   onAddToCart,
 }) => {
-  const [selectedSize, setSelectedSize] = React.useState<Size>('250ml');
-  const [quantity, setQuantity] = React.useState(1);
+  const [selectedSize, setSelectedSize] = useState<Size>('250ml');
+  const [quantity, setQuantity] = useState(1);
 
   const getPrice = () => {
     const inventoryItem = inventory.find(item => item.size === selectedSize);
-    return inventoryItem ? inventoryItem.price : 0;
+    return inventoryItem ? Number(inventoryItem.price) : 0;
   };
 
   const getAvailableQuantity = () => {
