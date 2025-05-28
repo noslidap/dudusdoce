@@ -28,6 +28,20 @@ const Cart: React.FC = () => {
     fetchStock();
   }, [items]);
 
+  useEffect(() => {
+    if (isCartOpen) {
+      document.body.classList.add('overflow-hidden');
+      document.documentElement.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+      document.documentElement.classList.remove('overflow-hidden');
+    }
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+      document.documentElement.classList.remove('overflow-hidden');
+    };
+  }, [isCartOpen]);
+
   const total = items.reduce((sum, item) => (
     sum + item.price * item.quantity
   ), 0);
@@ -42,7 +56,7 @@ const Cart: React.FC = () => {
 
   const handleWhatsAppOrder = () => {
     const message =
-      'Olá! Gostaria de fazer um pedido 🍮:%0A%0A' +
+      'Olá! Gostaria de fazer um pedido 🍮:\n\n' +
       items.map(item => (
         `*${item.product.name}*\n` +
         `Tamanho: ${item.size}\n` +
