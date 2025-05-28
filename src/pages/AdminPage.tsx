@@ -45,15 +45,15 @@ const SortableProduct = ({ product, onLabelChange }: { product: Product, onLabel
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-4 p-4 bg-warm-gray-50 rounded-lg mb-2"
+      className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 p-4 bg-warm-gray-50 rounded-lg mb-2 overflow-x-auto"
     >
-      <div className="cursor-grab" {...attributes} {...listeners}>
-        <GripVertical className="text-warm-gray-400" size={20} />
+      <div className="cursor-grab mb-2 sm:mb-0 flex items-center justify-center w-10 h-10 rounded-full bg-warm-gray-200 hover:bg-warm-gray-300 transition-colors" {...attributes} {...listeners}>
+        <GripVertical className="text-warm-gray-400" size={24} />
       </div>
-      <div className="flex-1">
-        <h4 className="font-medium">{product.name}</h4>
+      <div className="flex-1 min-w-0">
+        <h4 className="font-medium truncate">{product.name}</h4>
       </div>
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:gap-4">
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -431,19 +431,19 @@ const AdminPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="font-heading text-3xl font-bold text-left">Painel Administrativo</h1>
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 sm:gap-0">
+            <h1 className="font-heading text-3xl font-bold text-left mb-2 sm:mb-0">Painel Administrativo</h1>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Link 
                 to="/"
-                className="flex items-center gap-2 text-warm-gray-600 hover:text-primary transition-colors bg-warm-gray-100 px-4 py-2 rounded-lg"
+                className="flex items-center gap-2 text-warm-gray-600 hover:text-primary transition-colors bg-warm-gray-100 px-4 py-2 rounded-lg w-full sm:w-auto justify-center"
               >
                 <Home size={20} />
                 Voltar ao site
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex items-center px-4 py-2 bg-warm-gray-100 hover:bg-warm-gray-200 rounded-lg transition-colors"
+                className="flex items-center px-4 py-2 bg-warm-gray-100 hover:bg-warm-gray-200 rounded-lg transition-colors w-full sm:w-auto justify-center"
               >
                 <LogOut size={20} className="mr-2" />
                 Sair
@@ -532,7 +532,7 @@ const AdminPage: React.FC = () => {
                           <input
                             type="number"
                             min="0"
-                            placeholder="Quantidade"
+                            placeholder="Qtd"
                             className="w-24 px-2 py-1.5 border border-warm-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
@@ -576,6 +576,7 @@ const AdminPage: React.FC = () => {
                               type="text"
                               inputMode="numeric"
                               pattern="[0-9]*"
+                              placeholder="Qtd"
                               value={inventoryItem.available_quantity === 0 ? (inventoryItem.available_quantity === '' ? '' : 0) : inventoryItem.available_quantity}
                               onChange={(e) => handleInventoryChange(
                                 selectedProduct,
@@ -618,14 +619,14 @@ const AdminPage: React.FC = () => {
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8 overflow-x-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Gerenciar Produtos</h2>
             </div>
 
             <div className="mb-6">
-              <p className="text-warm-gray-600 mb-4">
-                Arraste os produtos para reordená-los. A ordem será salva automaticamente.
+              <p className="text-warm-gray-600 mb-4 text-sm">
+                Arraste os produtos pelo ícone <GripVertical className="inline align-middle text-warm-gray-400" size={16} /> para reordenar. A ordem será salva automaticamente.
               </p>
               
               <DndContext
