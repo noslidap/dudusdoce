@@ -32,6 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
       
       if (error) throw error;
       if (data) {
+        console.log('Inventory data for', id, ':', data);
         setInventory(data);
       }
     } catch (error) {
@@ -50,7 +51,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
 
   const getLowestPrice = () => {
     if (inventory.length === 0) return 0;
-    return Math.min(...inventory.map(item => Number(item.price)));
+    const prices = inventory.map(item => Number(item.price));
+    console.log('Prices for', id, ':', prices);
+    return Math.min(...prices);
   };
   
   return (
@@ -93,8 +96,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, delay = 0 }) => {
               <p className="text-primary font-semibold">
                 {isLoading ? (
                   <span className="text-warm-gray-400">Carregando...</span>
-                ) : (
+                ) : inventory.length > 0 ? (
                   `R$ ${getLowestPrice().toFixed(2)}`
+                ) : (
+                  <span className="text-warm-gray-400">Indisponível</span>
                 )}
               </p>
             </div>
