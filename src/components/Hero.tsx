@@ -13,7 +13,7 @@ const Hero: React.FC = () => {
           className="text-center md:text-left"
         >
           <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-warm-gray-900 mb-4 leading-tight">
-            O Pudim perfeito <span className="text-primary">existe</span> e está aqui!
+            O Pudim maravilhoso <span className="text-primary">existe</span> e está aqui!
           </h1>
           <p className="text-warm-gray-700 text-lg mb-8 md:max-w-md">
             Feito com amor, para ser devorado com prazer! Descubra nossos sabores irresistíveis.
